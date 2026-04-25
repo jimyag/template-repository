@@ -15,6 +15,8 @@ builds:
       - -trimpath
     ldflags:
       - -s -w
+      - -X 'github.com/jimmicro/version.GitTag={{.Tag}}'
+      - -X 'github.com/jimmicro/version.BuildTime={{.Date}}'
     goos:
       - linux
       - darwin
@@ -63,14 +65,4 @@ release:
   mode: replace
 
 changelog:
-  use: github
-  sort: asc
-  groups:
-    - title: Features
-      regexp: "^feat"
-      order: 0
-    - title: Bug Fixes
-      regexp: "^fix"
-      order: 1
-    - title: Others
-      order: 999
+  use: github-native
