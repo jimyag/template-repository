@@ -1,0 +1,8 @@
+FROM gcr.io/distroless/static:nonroot
+
+ARG TARGETARCH
+
+# Update the binary name to match your project
+COPY linux/${TARGETARCH}/template-repository /usr/local/bin/template-repository
+
+ENTRYPOINT ["/usr/local/bin/template-repository"]

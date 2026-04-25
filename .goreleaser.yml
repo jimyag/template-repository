@@ -1,0 +1,76 @@
+version: 2
+
+project_name: template-repository
+
+# ──────────────────────────────────────────────
+# CLI / Service: remove the builds section if this is a library-only project.
+# ──────────────────────────────────────────────
+builds:
+  - id: template-repository
+    main: ./cmd/template-repository/main.go
+    binary: template-repository
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: default
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    files:
+      - none*
+
+# ──────────────────────────────────────────────
+# Service only: remove the dockers_v2 section if not publishing images.
+# Dockerfile.release only copies the pre-built binary — no source build inside Docker.
+# ──────────────────────────────────────────────
+dockers_v2:
+  - platforms:
+      - linux/amd64
+      - linux/arm64
+    images:
+      - "ghcr.io/jimyag/template-repository"
+    tags:
+      - "{{ .Tag }}"
+      - "latest"
+    dockerfile: Dockerfile.release
+    sbom: none
+    labels:
+      org.opencontainers.image.created: "{{.Date}}"
+      org.opencontainers.image.title: "{{.ProjectName}}"
+      org.opencontainers.image.revision: "{{.FullCommit}}"
+      org.opencontainers.image.version: "{{.Tag}}"
+
+release:
+  github:
+    owner: jimyag
+    name: template-repository
+  mode: replace
+
+changelog:
+  use: github
+  sort: asc
+  groups:
+    - title: Features
+      regexp: "^feat"
+      order: 0
+    - title: Bug Fixes
+      regexp: "^fix"
+      order: 1
+    - title: Others
+      order: 999
