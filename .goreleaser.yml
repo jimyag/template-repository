@@ -2,6 +2,12 @@ version: 2
 
 project_name: template-repository
 
+before:
+  hooks:
+    - sh -c "cd web-vite && bun install && bun run build"
+    - sh -c "rm -rf ./internal/web/api/static && mkdir -p ./internal/web/api/static"
+    - sh -c "cp -r ./web-vite/dist/. ./internal/web/api/static/"
+
 # ──────────────────────────────────────────────
 # CLI / Service: remove the builds section if this is a library-only project.
 # ──────────────────────────────────────────────
@@ -9,6 +15,25 @@ builds:
   - id: template-repository
     main: ./cmd/template-repository/main.go
     binary: template-repository
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+      - -buildvcs=true
+    ldflags:
+      - -s -w
+      - -X 'github.com/jimmicro/version.GitTag={{.Tag}}'
+      - -X 'github.com/jimmicro/version.BuildTime={{.Date}}'
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+  - id: web
+    main: ./cmd/web/main.go
+    binary: web
     env:
       - CGO_ENABLED=0
     flags:
@@ -43,7 +68,9 @@ archives:
 # Dockerfile.release only copies the pre-built binary — no source build inside Docker.
 # ──────────────────────────────────────────────
 dockers_v2:
-  - platforms:
+  - ids:
+      - template-repository
+    platforms:
       - linux/amd64
       - linux/arm64
     images:

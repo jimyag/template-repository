@@ -17,6 +17,8 @@
 # Build output
 bin/
 dist/
+web-vite/dist/
+web-vite/node_modules/
 
 # Coverage
 coverage.txt
@@ -27,3 +29,6 @@ coverage.txt
 # Environment
 .env
 .env.local
+
+# Embedded frontend build artifacts
+internal/web/api/static/assets/
