@@ -7,31 +7,30 @@ on:
     branches: ["main"]
 
 jobs:
-  check:
+  staticcheck:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 1
-
-      - name: Set up Go
-        uses: actions/setup-go@v6
+      - uses: actions/setup-go@v6
         with:
           go-version: stable
           cache-dependency-path: go.sum
+      - run: go install honnef.co/go/tools/cmd/staticcheck@latest
+      - run: staticcheck ./...
 
-      - name: Install lint tools
-        run: |
-          go install honnef.co/go/tools/cmd/staticcheck@latest
-          go install mvdan.cc/gofumpt@latest
-          go install golang.org/x/tools/cmd/goimports@latest
-
-      - name: Run staticcheck
-        run: staticcheck ./...
-
-      - name: Check gofmt
-        run: |
+  gofmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache-dependency-path: go.sum
+      - run: |
           UNFORMATTED=$(gofmt -l .)
           if [ -n "$UNFORMATTED" ]; then
             echo "unformatted files (run: gofmt -w .):"
@@ -39,8 +38,18 @@ jobs:
             exit 1
           fi
 
-      - name: Check gofumpt
-        run: |
+  gofumpt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache-dependency-path: go.sum
+      - run: go install mvdan.cc/gofumpt@latest
+      - run: |
           UNFORMATTED=$(gofumpt -l .)
           if [ -n "$UNFORMATTED" ]; then
             echo "unformatted files (run: gofumpt -w .):"
@@ -48,8 +57,18 @@ jobs:
             exit 1
           fi
 
-      - name: Check goimports
-        run: |
+  goimports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache-dependency-path: go.sum
+      - run: go install golang.org/x/tools/cmd/goimports@latest
+      - run: |
           UNFORMATTED=$(goimports -l .)
           if [ -n "$UNFORMATTED" ]; then
             echo "unformatted files (run: goimports -w .):"
@@ -57,13 +76,29 @@ jobs:
             exit 1
           fi
 
-      - name: Run go vet
-        run: go vet ./...
+  vet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache-dependency-path: go.sum
+      - run: go vet ./...
 
-      - name: Run tests
-        run: GORACE=atexit_sleep_ms=0 go test -v -trimpath -failfast -race -cover -coverprofile=coverage.txt ./...
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache-dependency-path: go.sum
+      - run: GORACE=atexit_sleep_ms=0 go test -v -trimpath -failfast -race -cover -coverprofile=coverage.txt ./...
+      - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
