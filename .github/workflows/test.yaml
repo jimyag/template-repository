@@ -1,0 +1,14 @@
+name: e2b-runner-smoke
+
+on:
+  pull_request:
+    branches: ["main"]
+jobs:
+  smoke:
+    runs-on: [self-hosted, e2b]
+    steps:
+      - name: Print runner info
+        run: |
+          uname -a
+          whoami
+          pwd
