@@ -4,7 +4,7 @@ project_name: template-repository
 
 before:
   hooks:
-    - sh -c "cd web-vite && bun install && bun run build"
+    - sh -c "cd web-vite && bun install --frozen-lockfile && bun run build"
     - sh -c "rm -rf ./internal/web/api/static && mkdir -p ./internal/web/api/static"
     - sh -c "cp -r ./web-vite/dist/. ./internal/web/api/static/"
 
@@ -54,14 +54,11 @@ builds:
 archives:
   - id: default
     formats:
-      - tar.gz
-    format_overrides:
-      - goos: windows
-        formats:
-          - zip
-    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
-    files:
-      - none*
+      - binary
+    name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+
+checksum:
+  name_template: checksums.txt
 
 # ──────────────────────────────────────────────
 # Service only: remove the dockers_v2 section if not publishing images.

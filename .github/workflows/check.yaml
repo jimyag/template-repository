@@ -6,99 +6,64 @@ on:
   pull_request:
     branches: ["main"]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  staticcheck:
+  lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
-          fetch-depth: 1
-      - uses: actions/setup-go@v6
-        with:
-          go-version: stable
+          go-version-file: go.mod
           cache-dependency-path: go.sum
-      - run: go install honnef.co/go/tools/cmd/staticcheck@latest
-      - run: staticcheck ./...
-
-  gofmt:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
+      - name: Lint
+        uses: golangci/golangci-lint-action@v9
         with:
-          fetch-depth: 1
-      - uses: actions/setup-go@v6
-        with:
-          go-version: stable
-          cache-dependency-path: go.sum
-      - run: |
-          UNFORMATTED=$(gofmt -l .)
-          if [ -n "$UNFORMATTED" ]; then
-            echo "unformatted files (run: gofmt -w .):"
-            echo "$UNFORMATTED"
-            exit 1
-          fi
-
-  gofumpt:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-      - uses: actions/setup-go@v6
-        with:
-          go-version: stable
-          cache-dependency-path: go.sum
-      - run: go install mvdan.cc/gofumpt@latest
-      - run: |
-          UNFORMATTED=$(gofumpt -l .)
-          if [ -n "$UNFORMATTED" ]; then
-            echo "unformatted files (run: gofumpt -w .):"
-            echo "$UNFORMATTED"
-            exit 1
-          fi
-
-  goimports:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-      - uses: actions/setup-go@v6
-        with:
-          go-version: stable
-          cache-dependency-path: go.sum
-      - run: go install golang.org/x/tools/cmd/goimports@latest
-      - run: |
-          UNFORMATTED=$(goimports -l .)
-          if [ -n "$UNFORMATTED" ]; then
-            echo "unformatted files (run: goimports -w .):"
-            echo "$UNFORMATTED"
-            exit 1
-          fi
-
-  vet:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-      - uses: actions/setup-go@v6
-        with:
-          go-version: stable
-          cache-dependency-path: go.sum
-      - run: go vet ./...
+          version: latest
+          args: ./...
 
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
-          fetch-depth: 1
-      - uses: actions/setup-go@v6
-        with:
-          go-version: stable
+          go-version-file: go.mod
           cache-dependency-path: go.sum
-      - run: GORACE=atexit_sleep_ms=0 go test -v -trimpath -failfast -race -cover -coverprofile=coverage.txt ./...
-      - uses: codecov/codecov-action@v5
+      - uses: arduino/setup-task@v3
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          repo-token: ${{ github.token }}
+      - name: Test
+        run: task test
+      - name: Upload coverage
+        uses: codecov/codecov-action@v7
+        with:
+          use_oidc: true
+          files: coverage.txt
+          fail_ci_if_error: true
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - uses: arduino/setup-task@v3
+        with:
+          repo-token: ${{ github.token }}
+      - name: Build
+        run: task build

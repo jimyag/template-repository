@@ -1,8 +1,6 @@
 # template-repository
 
-Go template repository with two runnable examples:
-- `template-repository`: the original hello-world CLI binary
-- `web`: a Go web server that embeds a React frontend into a single binary
+A Go project template with a CLI and a web service that embeds a React frontend into a single binary. It includes Task-based local commands, golangci-lint, tests with coverage, GoReleaser, and optional multi-architecture container images.
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/jimyag/template-repository)](https://goreportcard.com/report/github.com/jimyag/template-repository)
 [![codecov](https://codecov.io/gh/jimyag/template-repository/branch/main/graph/badge.svg)](https://codecov.io/gh/jimyag/template-repository)
@@ -13,7 +11,12 @@ Go template repository with two runnable examples:
 
 ### From release
 
-Download the latest binaries from [Releases](https://github.com/jimyag/template-repository/releases).
+Download a standalone binary and `checksums.txt` from [Releases](https://github.com/jimyag/template-repository/releases). Release assets use these names:
+
+```text
+template-repository_<os>_<arch>
+web_<os>_<arch>
+```
 
 ### From source
 
@@ -26,6 +29,7 @@ go install github.com/jimyag/template-repository/cmd/web@latest
 
 ```bash
 docker pull ghcr.io/jimyag/template-repository:latest
+docker pull ghcr.io/jimyag/template-repository-web:latest
 ```
 
 ## Usage
@@ -68,7 +72,7 @@ API endpoints exposed by the Go server:
 ### Requirements
 
 - Go `1.26+`
-- [bun](https://bun.sh/) `1.2.21+`
+- Latest stable [Bun](https://bun.sh/)
 - `task` for the convenience commands below
 
 ### Frontend development
@@ -89,24 +93,28 @@ bun run dev
 
 Vite proxies `/api` to `http://localhost:8080`.
 
-### Build
+### Common commands
 
 ```bash
-# Install tools
 task deps
-
-# Install frontend dependencies
-cd web-vite && bun install
-
-# Run linters
 task lint
-
-# Run tests
 task test
-
-# Build frontend and both Go binaries
 task build
+task release-snapshot
 ```
+
+`task lint` runs golangci-lint for static analysis, import ordering, and formatting. `task build` installs frontend dependencies, builds the frontend, and writes both Go binaries to `bin/`.
+
+## Release
+
+Push a `v*` tag to run release verification and publish standalone Linux, macOS, and Windows binaries, checksums, and the configured container images:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Remove `dockers_v2` from `.goreleaser.yml` and the Docker setup/login steps from the release workflow for projects that do not publish container images.
 
 ## Contributing
 
