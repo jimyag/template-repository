@@ -1,17 +1,45 @@
-# template-repository
+<h1 align="center">template-repository</h1>
 
-A Go project template with a CLI and a web service that embeds a React frontend into a single binary. It includes Task-based local commands, golangci-lint, tests with coverage, GoReleaser, and optional multi-architecture container images.
+<p align="center">
+  <strong>A Go project template for a CLI and a web service with an embedded React frontend.</strong>
+</p>
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/jimyag/template-repository)](https://goreportcard.com/report/github.com/jimyag/template-repository)
-[![codecov](https://codecov.io/gh/jimyag/template-repository/branch/main/graph/badge.svg)](https://codecov.io/gh/jimyag/template-repository)
-[![License](https://img.shields.io/github/license/jimyag/template-repository)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/jimyag/template-repository)](https://github.com/jimyag/template-repository/releases)
+<p align="center">
+  <a href="https://github.com/jimyag/template-repository/actions/workflows/check.yaml"><img src="https://github.com/jimyag/template-repository/actions/workflows/check.yaml/badge.svg" alt="Check"></a>
+  <a href="https://github.com/jimyag/template-repository/actions/workflows/release.yaml"><img src="https://github.com/jimyag/template-repository/actions/workflows/release.yaml/badge.svg" alt="Release"></a>
+  <a href="https://codecov.io/gh/jimyag/template-repository"><img src="https://codecov.io/gh/jimyag/template-repository/branch/main/graph/badge.svg" alt="Codecov"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/jimyag/template-repository" alt="License"></a>
+  <a href="https://github.com/jimyag/template-repository/releases"><img src="https://img.shields.io/github/v/release/jimyag/template-repository" alt="Latest Release"></a>
+</p>
+
+<p align="center">
+  <a href="#whats-included">What's Included</a> ·
+  <a href="#installation">Installation</a> ·
+  <a href="#quick-start">Quick Start</a> ·
+  <a href="#development">Development</a> ·
+  <a href="#release">Release</a>
+</p>
+
+---
+
+template-repository is a starting point for Go projects that need both a command-line program and a web service. The web binary embeds a Vite-built React application, so the backend API and frontend can be distributed as a single executable.
+
+The repository includes local development tasks, linting, tests with coverage, GitHub Actions, GoReleaser, and optional multi-architecture container images.
+
+## What's Included
+
+- **Two Go binaries**: a minimal CLI in `cmd/template-repository` and a Gin web service in `cmd/web`.
+- **Embedded frontend**: React, React Router, Zustand, and Axios examples built with Vite and Bun.
+- **Single-binary web delivery**: the production frontend is embedded into the Go web binary with `go:embed`.
+- **Project checks**: golangci-lint, race-enabled Go tests, coverage upload, and build verification.
+- **Release automation**: raw Linux, macOS, and Windows binaries, checksums, and optional amd64/arm64 container images.
+- **Repository defaults**: issue templates, a pull request template, contribution guidance, a security policy, and Conventional Commits configuration.
 
 ## Installation
 
-### From release
+### From a release
 
-Download a standalone binary and `checksums.txt` from [Releases](https://github.com/jimyag/template-repository/releases). Release assets use these names:
+Download a standalone binary and `checksums.txt` from [GitHub Releases](https://github.com/jimyag/template-repository/releases/latest). Release assets use these names:
 
 ```text
 template-repository_<os>_<arch>
@@ -32,50 +60,45 @@ docker pull ghcr.io/jimyag/template-repository:latest
 docker pull ghcr.io/jimyag/template-repository-web:latest
 ```
 
-## Usage
+## Quick Start
 
-### CLI example
+Requirements:
 
-```bash
-template-repository
-```
+- Go `1.26+`
+- The latest stable [Bun](https://bun.sh/)
+- [Task](https://taskfile.dev/)
 
-### Web example
-
-Run the Go web server:
+Install the development tools and build both binaries:
 
 ```bash
-go run ./cmd/web
+task deps
+task build
 ```
 
-The server listens on `:8080` by default. Override it with:
+Run the CLI example:
 
 ```bash
-WEB_LISTEN_ADDR=:3000 go run ./cmd/web
+./bin/template-repository
 ```
 
-The embedded frontend includes these example routes:
+Run the web example:
 
-- `/`: home page
-- `/dynamic`: list/detail/nested route example
-- `/state`: Zustand shared state example
-- `/api-demo`: axios request/loading/error/cancel example
-- `/form`: controlled form and validation example
+```bash
+./bin/web
+```
 
-API endpoints exposed by the Go server:
+The server listens on `:8080` by default. Set `WEB_LISTEN_ADDR` to use another address:
+
+```bash
+WEB_LISTEN_ADDR=:3000 ./bin/web
+```
+
+The embedded frontend includes examples for dynamic and nested routes, shared Zustand state, Axios request states and cancellation, and controlled form validation. The Go server exposes:
 
 - `GET /api/items`
 - `GET /api/items/:id`
 
 ## Development
-
-### Requirements
-
-- Go `1.26+`
-- Latest stable [Bun](https://bun.sh/)
-- `task` for the convenience commands below
-
-### Frontend development
 
 Start the Go API server:
 
@@ -83,7 +106,7 @@ Start the Go API server:
 go run ./cmd/web
 ```
 
-In another terminal, start the Vite dev server:
+In another terminal, start the Vite development server:
 
 ```bash
 cd web-vite
@@ -91,9 +114,9 @@ bun install
 bun run dev
 ```
 
-Vite proxies `/api` to `http://localhost:8080`.
+Vite proxies `/api` requests to `http://localhost:8080`.
 
-### Common commands
+Common tasks:
 
 ```bash
 task deps
@@ -103,18 +126,20 @@ task build
 task release-snapshot
 ```
 
-`task lint` runs golangci-lint for static analysis, import ordering, and formatting. `task build` installs frontend dependencies, builds the frontend, and writes both Go binaries to `bin/`.
+`task lint` runs golangci-lint. `task test` runs Go tests with the race detector and writes `coverage.txt`. `task build` builds the frontend and writes both Go binaries to `bin/`.
 
 ## Release
 
-Push a `v*` tag to run release verification and publish standalone Linux, macOS, and Windows binaries, checksums, and the configured container images:
+Push a `v*` tag to verify the project and publish raw Linux, macOS, and Windows binaries, `checksums.txt`, and the configured container images:
 
 ```bash
 git tag v0.1.0
 git push origin v0.1.0
 ```
 
-Remove `dockers_v2` from `.goreleaser.yml` and the Docker setup/login steps from the release workflow for projects that do not publish container images.
+Run `task release-snapshot` before publishing to validate the GoReleaser configuration and local artifacts.
+
+Projects that do not publish container images can remove `dockers_v2` from `.goreleaser.yml` and the Docker setup and login steps from `.github/workflows/release.yaml`.
 
 ## Contributing
 
@@ -122,4 +147,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-[Apache 2.0](LICENSE)
+This project is licensed under the [Apache License 2.0](LICENSE).
