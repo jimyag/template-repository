@@ -9,7 +9,7 @@ import {
   useParams,
 } from "react-router";
 
-import { getItem, getItems } from "./api/items";
+import { getItem, getItems, type Item } from "./api/items";
 import { useCounterStore } from "./store/counter";
 import "./styles.css";
 
@@ -19,48 +19,49 @@ type AsyncState<T> = {
   loading: boolean;
 };
 
+const navItems = [
+  { to: "/", label: "Overview" },
+  { to: "/dynamic", label: "Routing" },
+  { to: "/state", label: "State" },
+  { to: "/api-demo", label: "API" },
+  { to: "/form", label: "Form" },
+];
+
 function AppLayout() {
-  const navItems = [
-    { to: "/", label: "Home" },
-    { to: "/dynamic", label: "Dynamic" },
-    { to: "/state", label: "State" },
-    { to: "/api-demo", label: "API Demo" },
-    { to: "/form", label: "Form" },
-  ];
-
   return (
-    <div className="shell">
-      <header className="hero">
-        <p className="eyebrow">Go + React Single Binary</p>
-        <h1>Web Template Playground</h1>
-        <p className="lede">
-          A compact example app that demonstrates routing, shared state, API calls,
-          and form handling against the embedded Go backend.
-        </p>
-      </header>
+    <div className="app">
+      <header className="topbar">
+        <div className="topbar-inner">
+          <Link className="brand" to="/">
+            <span className="brand-mark" aria-hidden="true" />
+            <span>Template</span>
+          </Link>
 
-      <div className="content-grid">
-        <aside className="sidebar">
-          <nav className="nav-list" aria-label="Examples">
+          <nav className="nav" aria-label="Examples">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.to === "/"}
-                className={({ isActive }) =>
-                  isActive ? "nav-link nav-link-active" : "nav-link"
-                }
+                className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
               >
                 {item.label}
               </NavLink>
             ))}
           </nav>
-        </aside>
+        </div>
+      </header>
 
-        <main className="panel">
-          <Outlet />
-        </main>
-      </div>
+      <main className="container">
+        <Outlet />
+      </main>
+
+      <footer className="footer">
+        <div className="container footer-inner">
+          <span>Served from a single Go binary with embedded assets.</span>
+          <span className="muted">Gin · React · Vite</span>
+        </div>
+      </footer>
     </div>
   );
 }
@@ -68,51 +69,66 @@ function AppLayout() {
 function HomePage() {
   const cards = [
     {
-      title: "Dynamic Routes",
-      body: "Fetch a list, navigate with URL params, and render a nested detail page.",
+      title: "Dynamic routes",
+      body: "Fetch a list, navigate with URL params, and render nested detail routes.",
       to: "/dynamic",
+      tag: "React Router",
     },
     {
-      title: "Zustand State",
+      title: "Shared state",
       body: "Share a counter across sibling components without extra providers.",
       to: "/state",
+      tag: "Zustand",
     },
     {
-      title: "Axios Demo",
-      body: "Show loading, error handling, and request cancellation against the Go API.",
+      title: "API requests",
+      body: "Loading, error handling, and request cancellation against the Go API.",
       to: "/api-demo",
+      tag: "Axios",
     },
     {
-      title: "Controlled Form",
-      body: "Validate fields, submit async, and surface user-friendly errors.",
+      title: "Controlled form",
+      body: "Validate fields, submit asynchronously, and surface friendly errors.",
       to: "/form",
+      tag: "React",
     },
   ];
 
+  const stack = ["Go", "Gin", "React", "React Router", "Zustand", "Vite", "TypeScript"];
+
   return (
     <section className="stack">
-      <div className="section-heading">
-        <h2>Examples</h2>
-        <p>Each route maps directly to a small, focused frontend pattern.</p>
+      <div className="hero">
+        <span className="pill">Go + React · single binary</span>
+        <h1>Web template playground</h1>
+        <p className="lede">
+          A compact example app that demonstrates routing, shared state, API calls, and
+          form handling against the embedded Go backend.
+        </p>
+        <ul className="tags" aria-label="Tech stack">
+          {stack.map((name) => (
+            <li key={name} className="tag">
+              {name}
+            </li>
+          ))}
+        </ul>
       </div>
 
       <div className="card-grid">
         {cards.map((card) => (
-          <Link key={card.to} className="card" to={card.to}>
+          <Link key={card.to} className="card card-link" to={card.to}>
+            <span className="card-tag">{card.tag}</span>
             <h3>{card.title}</h3>
             <p>{card.body}</p>
+            <span className="card-arrow" aria-hidden="true">
+              →
+            </span>
           </Link>
         ))}
       </div>
     </section>
   );
 }
-
-type Item = {
-  id: string;
-  name: string;
-  description: string;
-};
 
 function DynamicListPage() {
   const [state, setState] = React.useState<AsyncState<Item[]>>({
@@ -419,7 +435,7 @@ function FormDemoPage() {
         <p>Explicit validation, async submit simulation, and visible field errors.</p>
       </div>
 
-      <form className="form" onSubmit={handleSubmit}>
+      <form className="card form" onSubmit={handleSubmit}>
         <label className="field">
           <span>Name</span>
           <input
