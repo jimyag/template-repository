@@ -11,6 +11,10 @@ export default defineConfig({
       "@": path.resolve(import.meta.dirname, "./src"),
     },
   },
+  build: {
+    // The whole admin UI ships as one embedded bundle; ~200 kB gzip is expected.
+    chunkSizeWarningLimit: 1000,
+  },
   server: {
     port: 5173,
     proxy: {

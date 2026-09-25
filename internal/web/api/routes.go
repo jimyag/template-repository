@@ -10,10 +10,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func registerRoutes(router *gin.Engine) {
+func registerRoutes(router *gin.Engine, s *server) {
 	apiRoutes := router.Group("/api")
-	apiRoutes.GET("/items", listItems)
-	apiRoutes.GET("/items/:id", getItem)
+	apiRoutes.POST("/auth/login", s.login)
+
+	authed := apiRoutes.Group("", s.requireAuth)
+	authed.POST("/auth/logout", s.logout)
+	authed.GET("/auth/me", s.me)
+	authed.GET("/dashboard", s.dashboard)
+	authed.GET("/users", s.listUsers)
+	authed.POST("/users", s.createUser)
+	authed.GET("/users/:id", s.getUser)
+	authed.PUT("/users/:id", s.updateUser)
+	authed.DELETE("/users/:id", s.deleteUser)
 
 	router.NoRoute(spaFallbackHandler())
 }

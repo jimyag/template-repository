@@ -2,43 +2,52 @@ import * as React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router";
 
-import { Layout } from "@/components/layout";
+import { AppLayout, type RouteHandle } from "@/components/app-layout";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ApiDemoPage } from "@/pages/api-demo";
-import {
-  DynamicItemDetailPage,
-  DynamicItemIndexPage,
-  DynamicItemLayout,
-  DynamicListPage,
-} from "@/pages/dynamic";
-import { FormDemoPage } from "@/pages/form";
-import { HomePage } from "@/pages/home";
-import { StateDemoPage } from "@/pages/state";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { DashboardPage } from "@/pages/dashboard";
+import { LoginPage } from "@/pages/login";
+import { SettingsPage } from "@/pages/settings";
+import { ErrorPage, NotFoundPage } from "@/pages/status";
+import { UserDetailPage } from "@/pages/users/detail";
+import { UsersPage } from "@/pages/users/list";
 import "./index.css";
 
 const router = createBrowserRouter([
+  { path: "/login", element: <LoginPage />, errorElement: <ErrorPage /> },
   {
     path: "/",
-    element: <Layout />,
+    element: <AppLayout />,
+    errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <HomePage /> },
       {
-        path: "dynamic",
+        index: true,
+        element: <DashboardPage />,
+        handle: { crumb: "Dashboard" } satisfies RouteHandle,
+      },
+      {
+        path: "users",
+        handle: { crumb: "Users" } satisfies RouteHandle,
         children: [
-          { index: true, element: <DynamicListPage /> },
+          { index: true, element: <UsersPage /> },
           {
             path: ":id",
-            element: <DynamicItemLayout />,
-            children: [
-              { index: true, element: <DynamicItemIndexPage /> },
-              { path: "detail", element: <DynamicItemDetailPage /> },
-            ],
+            element: <UserDetailPage />,
+            handle: { crumb: (params) => `#${params.id}` } satisfies RouteHandle,
           },
         ],
       },
-      { path: "state", element: <StateDemoPage /> },
-      { path: "api-demo", element: <ApiDemoPage /> },
-      { path: "form", element: <FormDemoPage /> },
+      {
+        path: "settings",
+        element: <SettingsPage />,
+        handle: { crumb: "Settings" } satisfies RouteHandle,
+      },
+      {
+        path: "*",
+        element: <NotFoundPage />,
+        handle: { crumb: "Not found" } satisfies RouteHandle,
+      },
     ],
   },
 ]);
@@ -46,7 +55,10 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <ThemeProvider>
-      <RouterProvider router={router} />
+      <TooltipProvider>
+        <RouterProvider router={router} />
+        <Toaster richColors={false} />
+      </TooltipProvider>
     </ThemeProvider>
   </React.StrictMode>,
 );
