@@ -29,7 +29,7 @@ The repository includes local development tasks, linting, tests with coverage, G
 ## What's Included
 
 - **Two Go binaries**: a minimal CLI in `cmd/template-repository` and a Gin web service in `cmd/web`.
-- **Embedded frontend**: React, React Router, Zustand, and Axios examples built with Vite and Bun.
+- **Embedded admin console**: a React + shadcn/ui admin starter (login, dashboard, user CRUD, settings, 404/error pages) built with Vite and Bun.
 - **Single-binary web delivery**: the production frontend is embedded into the Go web binary with `go:embed`.
 - **Project checks**: golangci-lint, race-enabled Go tests, coverage upload, and build verification.
 - **Release automation**: raw Linux, macOS, and Windows binaries, checksums, and optional amd64/arm64 container images.
@@ -64,7 +64,7 @@ docker pull ghcr.io/jimyag/template-repository-web:latest
 
 Requirements:
 
-- Go `1.26+`
+- Go `1.27+`
 - The latest stable [Bun](https://bun.sh/)
 - [Task](https://taskfile.dev/)
 
@@ -93,10 +93,27 @@ The server listens on `:8080` by default. Set `WEB_LISTEN_ADDR` to use another a
 WEB_LISTEN_ADDR=:3000 ./bin/web
 ```
 
-The embedded frontend includes examples for dynamic and nested routes, shared Zustand state, Axios request states and cancellation, and controlled form validation. The Go server exposes:
+The embedded frontend is an admin console starter. Sign in with the demo account `admin` / `admin123`.
 
-- `GET /api/items`
-- `GET /api/items/:id`
+| Page | Route | Shows how to |
+| --- | --- | --- |
+| Login | `/login` | Authenticate, persist the session, redirect back after sign-in |
+| Dashboard | `/` | Stat cards and a summary table |
+| Users | `/users` | Search, filters and pagination kept in the URL; create/edit dialog; delete confirmation; toasts |
+| User detail | `/users/:id` | Detail layout with edit and delete actions |
+| Settings | `/settings` | Tabbed forms: profile, appearance (theme), notifications, password |
+| 404 / error | any unknown route | Not-found page and router error boundary |
+
+Routes other than `/login` require a session. The Axios client adds the bearer token and returns to the login page on `401`.
+
+The Go server exposes a matching in-memory API (`internal/web/store` holds the data; replace it with your database):
+
+- `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`
+- `GET /api/dashboard`
+- `GET /api/users?q=&role=&status=&page=&pageSize=`, `POST /api/users`
+- `GET /api/users/:id`, `PUT /api/users/:id`, `DELETE /api/users/:id`
+
+The demo credentials and sessions live in `internal/web/api/auth.go`. Replace them with real authentication before deploying.
 
 ## Development
 
@@ -115,6 +132,33 @@ bun run dev
 ```
 
 Vite proxies `/api` requests to `http://localhost:8080`.
+
+### Frontend UI conventions
+
+Every frontend built from this template uses the same stack so projects look and behave alike:
+
+- **Components**: [shadcn/ui](https://ui.shadcn.com/) (`new-york` style, Radix primitives), vendored in `web-vite/src/components/ui/`.
+- **Styling**: Tailwind CSS v4. No per-project CSS files; compose utilities and the shared components.
+- **Colors**: shadcn/ui `zinc` base color. The theme tokens live in `web-vite/src/index.css`; keep them identical across projects.
+- **Icons**: [lucide-react](https://lucide.dev/).
+- **Dark mode**: `.dark` class driven by `ThemeProvider` (light / dark / system), toggled by `ModeToggle`.
+
+Project layout under `web-vite/src`:
+
+- `components/ui/`: shadcn/ui components (generated, keep edits minimal)
+- `components/`: app-level building blocks (`AppLayout`, `AppSidebar`, `PageHeader`, `ConfirmDialog`, ...)
+- `pages/`: one file or folder per route
+- `api/`: typed API calls on a shared Axios client
+- `store/`: Zustand stores (session)
+
+To add a page, create it under `pages/`, register it in `main.tsx` with a breadcrumb `handle`, and add a sidebar entry in `components/app-sidebar.tsx`. Run `bun run format` before committing.
+
+`web-vite/components.json` holds the shadcn/ui configuration. Add more components with:
+
+```bash
+cd web-vite
+bunx shadcn@latest add checkbox popover calendar
+```
 
 Common tasks:
 
