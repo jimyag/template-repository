@@ -122,7 +122,7 @@ Every frontend built from this template uses the same stack so projects look and
 
 - **Components**: [shadcn/ui](https://ui.shadcn.com/) (`new-york` style, Radix primitives), vendored in `web-vite/src/components/ui/`.
 - **Styling**: Tailwind CSS v4. No per-project CSS files; compose utilities and the shared components.
-- **Colors**: shadcn/ui `neutral` base color. The theme tokens live in `web-vite/src/index.css`; keep them identical across projects.
+- **Colors**: shadcn/ui `zinc` base color. The theme tokens live in `web-vite/src/index.css`; keep them identical across projects.
 - **Icons**: [lucide-react](https://lucide.dev/).
 - **Dark mode**: `.dark` class driven by `ThemeProvider` (light / dark / system), toggled by `ModeToggle`.
 
