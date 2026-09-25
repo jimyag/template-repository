@@ -29,7 +29,7 @@ The repository includes local development tasks, linting, tests with coverage, G
 ## What's Included
 
 - **Two Go binaries**: a minimal CLI in `cmd/template-repository` and a Gin web service in `cmd/web`.
-- **Embedded frontend**: React, React Router, Zustand, and Axios examples built with Vite and Bun.
+- **Embedded frontend**: React, React Router, Zustand, and Axios examples built with Vite and Bun, styled with shadcn/ui and Tailwind CSS.
 - **Single-binary web delivery**: the production frontend is embedded into the Go web binary with `go:embed`.
 - **Project checks**: golangci-lint, race-enabled Go tests, coverage upload, and build verification.
 - **Release automation**: raw Linux, macOS, and Windows binaries, checksums, and optional amd64/arm64 container images.
@@ -115,6 +115,23 @@ bun run dev
 ```
 
 Vite proxies `/api` requests to `http://localhost:8080`.
+
+### Frontend UI conventions
+
+Every frontend built from this template uses the same stack so projects look and behave alike:
+
+- **Components**: [shadcn/ui](https://ui.shadcn.com/) (`new-york` style, Radix primitives), vendored in `web-vite/src/components/ui/`.
+- **Styling**: Tailwind CSS v4. No per-project CSS files; compose utilities and the shared components.
+- **Colors**: shadcn/ui `neutral` base color. The theme tokens live in `web-vite/src/index.css`; keep them identical across projects.
+- **Icons**: [lucide-react](https://lucide.dev/).
+- **Dark mode**: `.dark` class driven by `ThemeProvider` (light / dark / system), toggled by `ModeToggle`.
+
+`web-vite/components.json` holds the shadcn/ui configuration. Add more components with:
+
+```bash
+cd web-vite
+bunx shadcn@latest add dialog dropdown-menu table
+```
 
 Common tasks:
 
