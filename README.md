@@ -64,7 +64,7 @@ docker pull ghcr.io/jimyag/template-repository-web:latest
 
 Requirements:
 
-- Go `1.26+`
+- Go `1.27+`
 - The latest stable [Bun](https://bun.sh/)
 - [Task](https://taskfile.dev/)
 
