@@ -183,6 +183,8 @@ git push origin v0.1.0
 
 Run `task release-snapshot` before publishing to validate the GoReleaser configuration and local artifacts.
 
+Release notes list every commit between the previous tag and the new tag.
+
 Projects that do not publish container images can remove `dockers_v2` from `.goreleaser.yml` and the Docker setup and login steps from `.github/workflows/release.yaml`.
 
 ## Contributing
