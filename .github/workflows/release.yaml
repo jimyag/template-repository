@@ -6,6 +6,7 @@ on:
       - "v*"
 
 permissions:
+  pull-requests: read
   contents: read
 
 concurrency:
@@ -17,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
@@ -31,6 +34,7 @@ jobs:
         uses: golangci/golangci-lint-action@v9
         with:
           version: latest
+          only-new-issues: true
           args: ./...
       - name: Test
         run: go test -count=1 ./...
