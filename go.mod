@@ -2,6 +2,8 @@ module github.com/jimyag/template-repository
 
 go 1.27
 
+toolchain go1.27.3
+
 require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/jimmicro/version v1.1.0
